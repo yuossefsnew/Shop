@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>متجري الرقمي</title>
+  
+  <!-- Font Awesome Icons & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- CryptoJS Library for SHA-256 Encryption -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #6c5ce7;
+      --primary-hover: #5b4bc4;
+      --secondary: #fd79a8;
+      --accent: #00b894;
+      --danger: #d63031;
+      --warning: #fdcb6e;
+      --whatsapp-color: #25d366;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --text-color: #2d3436;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Tajawal', sans-serif;
+    }
+
+    body {
+      background: #f0f3f8;
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header Styling */
+    header {
+      background: linear-gradient(135deg, #6c5ce7, #ff7675);
+      color: white;
+      padding: 1.2rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .btn-nav {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid white;
+      padding: 0.5rem 1.2rem;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+
+    .btn-nav:hover {
+      background: white;
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    /* Hero Banner */
+    .hero {
+      background: linear-gradient(135deg, #a29bfe, #fd79a8);
+      color: white;
+      text-align: center;
+      padding: 2.5rem 1rem;
+      margin-bottom: 2rem;
+      border-radius: 0 0 30px 30px;
+      box-shadow: 0 10px 25px rgba(108, 92, 231, 0.2);
+    }
+
+    .hero h2 {
+      font-size: 2.5rem;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem 3rem;
+      flex-grow: 1;
+    }
+
+    /* Admin Panel */
+    .admin-panel {
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      margin-bottom: 2.5rem;
+      border: 2px dashed #00b894;
+      position: relative;
+    }
+
+    .admin-badge {
+      position: absolute;
+      top: -12px;
+      right: 20px;
+      background: #00b894;
+      color: white;
+      padding: 2px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 2px solid #dfe6e9;
+      border-radius: 12px;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .form-group textarea {
+      grid-column: 1 / -1;
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .file-label {
+      background: #f8f9fa;
+      border: 2px dashed var(--primary);
+      border-radius: 12px;
+      padding: 0.7rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      color: var(--primary);
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .file-label:hover {
+      background: #eef2ff;
+    }
+
+    .image-preview {
+      width: 100%;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 12px;
+      display: none;
+      margin-top: 10px;
+    }
+
+    .form-group input:focus, .form-group textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-add {
+      background: #00b894;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      grid-column: 1 / -1;
+      transition: 0.3s;
+    }
+
+    .btn-add:hover {
+      background: #00a181;
+      transform: translateY(-2px);
+    }
+
+    /* Products Grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 2rem;
+    }
+
+    .product-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(255,255,255,0.8);
+      position: relative;
+    }
+
+    .product-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 30px rgba(108, 92, 231, 0.15);
+    }
+
+    .product-card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+    }
+
+    .product-info {
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-grow: 1;
+    }
+
+    .product-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .product-details {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-price {
+      color: #e84393;
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .product-qty {
+      background: #e17055;
+      color: white;
+      font-size: 0.85rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: bold;
+    }
+
+    .btn-buy {
+      background: linear-gradient(135deg, #25d366, #128c7e);
+      color: white;
+      border: none;
+      padding: 0.7rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: auto;
+      transition: 0.3s;
+      text-decoration: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-buy:hover {
+      opacity: 0.9;
+      transform: scale(1.02);
+    }
+
+    /* زر غير متاح عند نفاد الكمية */
+    .btn-disabled {
+      background: linear-gradient(135deg, #d63031, #ff7675) !important;
+      cursor: not-allowed !important;
+      opacity: 0.85;
+      pointer-events: none;
+    }
+
+    .admin-actions {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .btn-admin-action {
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.3s;
+      color: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .btn-edit {
+      background: rgba(225, 112, 85, 0.95);
+    }
+
+    .btn-edit:hover {
+      background: #d63031;
+      transform: scale(1.1);
+    }
+
+    .btn-delete {
+      background: rgba(214, 48, 49, 0.95);
+    }
+
+    .btn-delete:hover {
+      background: var(--danger);
+      transform: scale(1.1);
+    }
+
+    /* Custom Toast Notifications */
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: #2d3436;
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.3s ease-out forwards;
+      min-width: 250px;
+    }
+
+    .toast.success { border-right: 5px solid var(--accent); }
+    .toast.error { border-right: 5px solid var(--danger); }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Modal Styling */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 24px;
+      width: 90%;
+      max-width: 450px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #b2bec3;
+    }
+
+    .auth-toggle {
+      text-align: center;
+      margin-top: 1rem;
+      color: var(--primary);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Notifications Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <i class="fa-solid fa-bag-shopping"></i>
+      <span>متجري</span>
+    </div>
+    <nav>
+      <span id="user-display" style="font-weight: bold;"></span>
+      <button id="login-nav-btn" class="btn-nav" onclick="openAuthModal()"><i class="fa-solid fa-user"></i> تسجيل الدخول</button>
+      <button id="logout-btn" class="btn-nav hidden" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <h2>أهلاً بك 🌟</h2>
+  </section>
+
+  <div class="container">
+    
+    <!-- Admin Panel -->
+    <div id="admin-panel" class="admin-panel hidden">
+      <span class="admin-badge">لوحة الأدمن</span>
+      <h3><i class="fa-solid fa-plus-circle"></i> إضافة منتج جديد</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <input type="text" id="prod-title" placeholder="اسم المنتج">
+        </div>
+        <div class="form-group">
+          <input type="number" id="prod-price" placeholder="السعر ($)">
+        </div>
+        <div class="form-group">
+          <input type="number" id="prod-qty" placeholder="الكمية المتاحة (مثال: 10)">
+        </div>
+        
+        <!-- File Upload Field -->
+        <div class="form-group file-input-wrapper">
+          <label for="prod-file" class="file-label">
+            <i class="fa-solid fa-image"></i> اختر صورة من الجهاز
+          </label>
+          <input type="file" id="prod-file" accept="image/*" style="display: none;" onchange="previewSelectedImage(event, 'image-preview', 'add')">
+          <img id="image-preview" class="image-preview" alt="معاينة الصورة">
+        </div>
+
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <textarea id="prod-message" placeholder="رسالة الواتساب المخصصة عند طلب هذا المنتج (اختياري)"></textarea>
+        </div>
+        <button class="btn-add" onclick="addProduct()"><i class="fa-solid fa-cloud-arrow-up"></i> نشر المنتج</button>
+      </div>
+    </div>
+
+    <!-- Products Display Section -->
+    <h2 style="margin-bottom: 1.5rem;"><i class="fa-solid fa-store"></i> المنتجات المتاحة</h2>
+    <div id="products-grid" class="products-grid">
+      <!-- Dynamically Injected Products -->
+    </div>
+
+  </div>
+
+  <!-- Edit Product Modal -->
+  <div id="edit-modal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeEditModal()">&times;</span>
+      <h2 style="margin-bottom: 1.5rem; text-align: center;"><i class="fa-solid fa-pen-to-square"></i> تعديل المنتج</h2>
+      <input type="hidden" id="edit-prod-key">
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label style="font-weight: bold; font-size: 0.9rem;">اسم المنتج:</label>
+        <input type="text" id="edit-prod-title">
+      </div>
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label style="font-weight: bold; font-size: 0.9rem;">السعر ($):</label>
+        <input type="number" id="edit-prod-price">
+      </div>
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label style="font-weight: bold; font-size: 0.9rem;">الكمية المتاحة:</label>
+        <input type="number" id="edit-prod-qty">
+      </div>
+      <div class="form-group file-input-wrapper" style="margin-bottom: 1rem;">
+        <label for="edit-prod-file" class="file-label">
+          <i class="fa-solid fa-image"></i> تغيير الصورة (اختياري)
+        </label>
+        <input type="file" id="edit-prod-file" accept="image/*" style="display: none;" onchange="previewSelectedImage(event, 'edit-image-preview', 'edit')">
+        <img id="edit-image-preview" class="image-preview" style="display: block;" alt="معاينة الصورة">
+      </div>
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label style="font-weight: bold; font-size: 0.9rem;">رسالة الواتساب المخصصة:</label>
+        <textarea id="edit-prod-message"></textarea>
+      </div>
+      <button class="btn-add" style="width: 100%;" onclick="saveProductEdit()"><i class="fa-solid fa-floppy-disk"></i> حفظ التعديلات</button>
+    </div>
+  </div>
+
+  <!-- Auth Modal (Login / Register Popup) -->
+  <div id="auth-modal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeAuthModal()">&times;</span>
+      
+      <!-- Login Form -->
+      <div id="login-form">
+        <h2 style="margin-bottom: 1.5rem; text-align: center;"><i class="fa-solid fa-lock"></i> تسجيل الدخول</h2>
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <input type="text" id="login-username" placeholder="اسم المستخدم">
+        </div>
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <input type="password" id="login-password" placeholder="كلمة المرور">
+        </div>
+        <button class="btn-buy" style="width: 100%; padding: 0.8rem; background: var(--primary);" onclick="login()">دخول</button>
+        <p class="auth-toggle" onclick="toggleAuthForms()">ليس لديك حساب؟ سجل الآن</p>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-form" class="hidden">
+        <h2 style="margin-bottom: 1.5rem; text-align: center;"><i class="fa-solid fa-user-plus"></i> إنشاء حساب</h2>
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <input type="text" id="reg-username" placeholder="اسم المستخدم">
+        </div>
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <input type="password" id="reg-password" placeholder="كلمة المرور">
+        </div>
+        <button class="btn-buy" style="width: 100%; padding: 0.8rem; background: var(--accent);" onclick="register()">إنشاء الحساب</button>
+        <p class="auth-toggle" onclick="toggleAuthForms()">لديك حساب بالفعل؟ سجل دخولك</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Firebase Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, get, push, remove, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBWwW5c44qXW_osg73lUhlr07LLPhQxWSs",
+      authDomain: "website-6b237.firebaseapp.com",
+      databaseURL: "https://website-6b237-default-rtdb.firebaseio.com",
+      projectId: "website-6b237",
+      storageBucket: "website-6b237.firebasestorage.app",
+      messagingSenderId: "820183194519",
+      appId: "1:820183194519:web:34fd43e71da20774ce82d2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let currentUser = null;
+    let selectedBase64Image = "";
+    let editBase64Image = "";
+    const adminPhone = "201222472508";
+
+    // Toast Notification
+    window.showToast = function(msg, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> <span>${msg}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s reverse forwards';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    };
+
+    function hashPassword(password) {
+      return CryptoJS.SHA256(password).toString();
+    }
+
+    window.openAuthModal = () => document.getElementById('auth-modal').classList.remove('hidden');
+    window.closeAuthModal = () => document.getElementById('auth-modal').classList.add('hidden');
+    window.closeEditModal = () => document.getElementById('edit-modal').classList.add('hidden');
+
+    window.toggleAuthForms = () => {
+      document.getElementById('login-form').classList.toggle('hidden');
+      document.getElementById('register-form').classList.toggle('hidden');
+    };
+
+    // Preview and Convert Image to Base64
+    window.previewSelectedImage = function(event, previewId, mode) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        if (mode === 'add') {
+          selectedBase64Image = e.target.result;
+        } else {
+          editBase64Image = e.target.result;
+        }
+        const imgPreview = document.getElementById(previewId);
+        imgPreview.src = e.target.result;
+        imgPreview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    };
+
+    // Auto Login Check
+    function checkSavedUser() {
+      const savedUser = localStorage.getItem('store_user');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        const userRef = ref(db, 'users/' + currentUser.username);
+        get(userRef).then((snapshot) => {
+          if (snapshot.exists()) {
+            currentUser = snapshot.val();
+            localStorage.setItem('store_user', JSON.stringify(currentUser));
+            setupUI();
+          }
+        });
+      }
+    }
+
+    // Register User
+    window.register = function() {
+      const username = document.getElementById('reg-username').value.trim();
+      const password = document.getElementById('reg-password').value;
+
+      if (!username || !password) {
+        showToast("يرجى إكمال جميع الحقول المطلوب إدخالها", "error");
+        return;
+      }
+
+      const userRef = ref(db, 'users/' + username);
+      get(userRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          showToast("اسم المستخدم هذا مأخوذ بالفعل، جرب اسماً آخر", "error");
+        } else {
+          const newUser = {
+            username: username,
+            password: hashPassword(password),
+            isAdmin: false
+          };
+          set(userRef, newUser).then(() => {
+            showToast("تم إنشاء حسابك بنجاح! يمكنك الآن الدخول");
+            window.toggleAuthForms();
+          });
+        }
+      });
+    };
+
+    // Login User
+    window.login = function() {
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      if (!username || !password) {
+        showToast("يرجى كتابة اسم المستخدم وكلمة المرور", "error");
+        return;
+      }
+
+      const userRef = ref(db, 'users/' + username);
+      get(userRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          const userData = snapshot.val();
+          if (userData.password === hashPassword(password)) {
+            currentUser = userData;
+            localStorage.setItem('store_user', JSON.stringify(currentUser));
+            setupUI();
+            window.closeAuthModal();
+            showToast(`أهلاً بك مجدداً يا ${currentUser.username}!`);
+          } else {
+            showToast("كلمة المرور غير صحيحة", "error");
+          }
+        } else {
+          showToast("اسم المستخدم غير موجود", "error");
+        }
+      });
+    };
+
+    // Logout
+    window.logout = function() {
+      currentUser = null;
+      localStorage.removeItem('store_user');
+      document.getElementById('user-display').innerText = '';
+      document.getElementById('login-nav-btn').classList.remove('hidden');
+      document.getElementById('logout-btn').classList.add('hidden');
+      document.getElementById('admin-panel').classList.add('hidden');
+      showToast("تم تسجيل الخروج بنجاح");
+      loadProducts();
+    };
+
+    // Setup UI
+    function setupUI() {
+      document.getElementById('login-nav-btn').classList.add('hidden');
+      document.getElementById('logout-btn').classList.remove('hidden');
+      document.getElementById('user-display').innerText = `أهلاً، ${currentUser.username}`;
+
+      if (currentUser.isAdmin) {
+        document.getElementById('admin-panel').classList.remove('hidden');
+      } else {
+        document.getElementById('admin-panel').classList.add('hidden');
+      }
+      loadProducts();
+    }
+
+    // Add Product
+    window.addProduct = function() {
+      if (!currentUser || !currentUser.isAdmin) return;
+
+      const title = document.getElementById('prod-title').value.trim();
+      const price = document.getElementById('prod-price').value;
+      const qty = document.getElementById('prod-qty').value;
+      let message = document.getElementById('prod-message').value.trim();
+
+      if (!title || !price || !selectedBase64Image || !qty) {
+        showToast("يرجى اختيار صورة واكمال جميع بيانات المنتج", "error");
+        return;
+      }
+
+      if (!message) {
+        message = `مرحباً، أرغب في شراء المنتج: (${title}) بسعر: ${price}$`;
+      }
+
+      const productsRef = ref(db, 'products');
+      push(productsRef, {
+        title: title,
+        price: price,
+        qty: parseInt(qty),
+        image: selectedBase64Image,
+        message: message
+      }).then(() => {
+        showToast("تم رفع الصورة ونشر المنتج بنجاح!");
+        document.getElementById('prod-title').value = '';
+        document.getElementById('prod-price').value = '';
+        document.getElementById('prod-qty').value = '';
+        document.getElementById('prod-file').value = '';
+        document.getElementById('prod-message').value = '';
+        document.getElementById('image-preview').style.display = 'none';
+        selectedBase64Image = "";
+      });
+    };
+
+    // Open Edit Modal with product current data
+    window.openEditModal = function(prodKey) {
+      if (!currentUser || !currentUser.isAdmin) return;
+
+      const prodRef = ref(db, 'products/' + prodKey);
+      get(prodRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          const prod = snapshot.val();
+          document.getElementById('edit-prod-key').value = prodKey;
+          document.getElementById('edit-prod-title').value = prod.title;
+          document.getElementById('edit-prod-price').value = prod.price;
+          document.getElementById('edit-prod-qty').value = prod.qty ?? 0;
+          document.getElementById('edit-prod-message').value = prod.message ?? '';
+          
+          const imgPreview = document.getElementById('edit-image-preview');
+          imgPreview.src = prod.image;
+          editBase64Image = prod.image; // Keep original image unless changed
+          
+          document.getElementById('edit-modal').classList.remove('hidden');
+        }
+      });
+    };
+
+    // Save Edit Changes
+    window.saveProductEdit = function() {
+      if (!currentUser || !currentUser.isAdmin) return;
+
+      const prodKey = document.getElementById('edit-prod-key').value;
+      const title = document.getElementById('edit-prod-title').value.trim();
+      const price = document.getElementById('edit-prod-price').value;
+      const qty = document.getElementById('edit-prod-qty').value;
+      const message = document.getElementById('edit-prod-message').value.trim();
+
+      if (!title || !price || !qty) {
+        showToast("يرجى إكمال جميع الحقول المطلوبة", "error");
+        return;
+      }
+
+      const prodRef = ref(db, 'products/' + prodKey);
+      update(prodRef, {
+        title: title,
+        price: price,
+        qty: parseInt(qty),
+        image: editBase64Image,
+        message: message
+      }).then(() => {
+        showToast("تم تحديث بيانات المنتج بنجاح!");
+        closeEditModal();
+      }).catch((err) => {
+        showToast("تعذر تعديل المنتج: " + err.message, "error");
+      });
+    };
+
+    // Delete Product
+    window.deleteProduct = function(prodKey) {
+      if (!currentUser || !currentUser.isAdmin) return;
+
+      if (confirm("هل أنت تأكد من رغبتك في إزالة هذا المنتج من المتجر؟")) {
+        const prodRef = ref(db, 'products/' + prodKey);
+        remove(prodRef).then(() => {
+          showToast("تمت إزالة المنتج بنجاح");
+        });
+      }
+    };
+
+    // Load Products
+    function loadProducts() {
+      const productsRef = ref(db, 'products');
+      onValue(productsRef, (snapshot) => {
+        const grid = document.getElementById('products-grid');
+        grid.innerHTML = '';
+
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          Object.keys(data).forEach((key) => {
+            const prod = data[key];
+            const productQty = prod.qty ?? 0;
+            const customMsg = prod.message ? encodeURIComponent(prod.message) : encodeURIComponent(`مرحباً، أرغب في شراء ${prod.title}`);
+            const whatsappUrl = `https://wa.me/${adminPhone}?text=${customMsg}`;
+            
+            const adminActionsHtml = (currentUser && currentUser.isAdmin) 
+              ? `<div class="admin-actions">
+                  <button class="btn-admin-action btn-edit" title="تعديل المنتج" onclick="openEditModal('${key}')"><i class="fa-solid fa-pen"></i></button>
+                  <button class="btn-admin-action btn-delete" title="حذف المنتج" onclick="deleteProduct('${key}')"><i class="fa-solid fa-trash"></i></button>
+                 </div>` 
+              : '';
+
+            // الفحص: إذا كانت الكمية أكبر من 0 يظهر زر الشراء العادي، غير ذلك يظهر زر غير متاح بالأحمر
+            const buyBtnHtml = productQty > 0 
+              ? `<a href="${whatsappUrl}" target="_blank" class="btn-buy">
+                  <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i> شراء الآن
+                 </a>`
+              : `<button class="btn-buy btn-disabled" disabled>
+                  <i class="fa-solid fa-ban"></i> غير متاح
+                 </button>`;
+
+            const prodCard = `
+              <div class="product-card">
+                ${adminActionsHtml}
+                <img src="${prod.image}" alt="${prod.title}" onerror="this.src='https://via.placeholder.com/300x200?text=منتج'">
+                <div class="product-info">
+                  <h3 class="product-title">${prod.title}</h3>
+                  <div class="product-details">
+                    <span class="product-price">${prod.price} $</span>
+                    <span class="product-qty"><i class="fa-solid fa-boxes-stacked"></i> الكمية: ${productQty}</span>
+                  </div>
+                  ${buyBtnHtml}
+                </div>
+              </div>
+            `;
+            grid.innerHTML += prodCard;
+          });
+        } else {
+          grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; padding: 2rem; color: #b2bec3;">لا توجد منتجات معروضة في المتجر حالياً.</p>';
+        }
+      });
+    }
+
+    checkSavedUser();
+    loadProducts();
+  </script>
+</body>
+</html>
